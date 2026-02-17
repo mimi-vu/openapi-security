@@ -50,104 +50,96 @@ paths:
 
 
 
-
 openapi: 3.0.0
 info:
-  title: SEC-CHECK Demonstration API
+  title: SEC-CHECK Demo API
   version: 1.0.0
-  # SEC007 & SEC008: If this 'contact' block is missing or has no email, it's an issue.
   contact:
     name: Security Team
     email: security@example.com
     url: https://example.com/support
+    x-security-contact: security@example.com
 
-# SEC009: High Wildcard Server URL
 servers:
-  - url: https://{environment}.api.example.com
-    description: Production and Staging
-    variables:
-      environment:
-        default: prod
-        # If 'enum' is missing here, it triggers SEC009
-        enum:
-          - prod
-          - staging
+  - url: https://api.example.com
+    description: Production server
 
 paths:
-  # --- VULNERABLE PATH ---
   /v1/search:
     get:
       summary: Search for items
-      # SEC002: Missing 'security' block here
+      security: []  # Explicitly public
       parameters:
         - name: api_key
           in: query
           description: Search authorization
-          # SEC005: Sensitive keyword "api_key" in query string
           schema:
             type: string
-            # SEC010: Missing pattern, minLength, etc.
         - name: query
           in: query
           schema:
             type: string
-            # SEC010: No input validation
       responses:
         '200':
           description: Successful search
-        # SEC006: Missing 401, 403, and 429 response definitions
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '429':
+          description: Too Many Requests
 
-  # --- SECURE PATH ---
   /v1/user/profile:
     post:
       summary: Update user profile
       security:
-        - BearerAuth: []
+        - bearerAuth: []
       parameters:
         - name: userId
           in: path
           required: true
           schema:
             type: string
-            pattern: '^[U]-[0-9]{6}$' # SEC010: VALIDATED
+            pattern: '^[U]-[0-9]{6}$'
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required: [username, age]
+              required:
+                - username
+                - age
               properties:
                 username:
                   type: string
                   minLength: 3
                   maxLength: 15
-                  pattern: '^[a-z]+$' # SEC010: VALIDATED
+                  pattern: '^[a-z]+$'
                 age:
                   type: integer
-                  minimum: 18         # SEC010: VALIDATED
+                  minimum: 18
       responses:
         '200':
           description: Profile updated
         '401':
-          description: Unauthorized - SEC006: PASSED
+          description: Unauthorized
         '403':
-          description: Forbidden - SEC006: PASSED
+          description: Forbidden
         '429':
-          description: Too Many Requests - SEC006: PASSED
+          description: Too Many Requests
 
-  # --- DEPRECATED PATH ---
   /v1/old-login:
     post:
       summary: Legacy login
-      deprecated: true # Your script can flag this as a warning
+      deprecated: true
       responses:
         '200':
           description: Login success
 
 components:
   securitySchemes:
-    BearerAuth:
+    bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT

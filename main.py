@@ -11,8 +11,6 @@ templates = Jinja2Templates(directory="templates")
 
 # json or yaml file upload
 def parse_spec(content: str):
-
-    "PARSING"
     try:
         print("JSON")
         return json.loads(content)
