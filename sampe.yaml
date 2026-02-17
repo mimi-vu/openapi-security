@@ -1,0 +1,118 @@
+openapi: 3.0.0
+info:
+  title: Fully Secure API
+  version: 1.0.0
+  description: Example API designed to have no security issues.
+  contact:
+    name: Security Team
+    email: security@example.com
+  x-security-contact: security@example.com
+
+servers:
+  - url: https://api.example.com
+    description: Production server
+security:
+  - bearerAuth: []
+
+paths:
+  /users:
+    get:
+      summary: Get all users
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          headers:
+            X-RateLimit-Limit:
+              description: Maximum requests
+              schema:
+                type: integer
+            X-RateLimit-Remaining:
+              description: Remaining requests
+              schema:
+                type: integer
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '429':
+          description: Too Many Requests
+    post:
+      summary: Create a new user
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  minLength: 3
+                  maxLength: 50
+                  pattern: '^[a-zA-Z0-9_]+$'
+                password:
+                  type: string
+                  minLength: 12
+      responses:
+        '201':
+          description: Created
+          headers:
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '429':
+          description: Too Many Requests
+
+  /account:
+    put:
+      summary: Update account info
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                displayName:
+                  type: string
+                  minLength: 3
+                  maxLength: 50
+      responses:
+        '200':
+          description: Update successful
+          headers:
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '429':
+          description: Too Many Requests
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
